@@ -7,7 +7,7 @@ const app = express();
 
 const db = require("./app/models");
 
-// db.sequelize.sync();
+db.sequelize.sync();
 
 var corsOptions = {
   origin: "*",
@@ -28,6 +28,7 @@ app.get("/", (req, res) => {
 });
 
 require("./app/routes/auth.routes.js")(app);
+require("./app/routes/member.routes.js")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 3200;
