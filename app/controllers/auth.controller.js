@@ -1,13 +1,12 @@
 const db = require("../models");
 const { authenticate } = require("../authentication/authentication");
-const User = db.user;
-const Session = db.session;
-const Op = db.Sequelize.Op;
+const User = db.Member;
+const Session = db.Session;
 const { encrypt } = require("../authentication/crypto");
 
 exports.login = async (req, res) => {
-  let { userId } = await authenticate(req, res, "credentials");
-
+  let { userId } = await authenticate(req, res);
+  console.log("user id",userId)
   if (userId !== undefined) {
     let user = {};
     await User.findByPk(userId).then((data) => {
@@ -19,7 +18,7 @@ exports.login = async (req, res) => {
 
     const session = {
       email: user.email,
-      userId: userId,
+      memberId: userId,
       expirationDate: expireTime,
     };
     await Session.create(session).then(async (data) => {
@@ -27,9 +26,8 @@ exports.login = async (req, res) => {
       let token = await encrypt(sessionId);
       let userInfo = {
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        id: user.id,
+        fullName: user.fullName,
+        id: user.memberId,
         token: token,
       };
       res.send(userInfo);

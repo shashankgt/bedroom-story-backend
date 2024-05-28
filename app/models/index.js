@@ -9,24 +9,31 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
     acquire: dbConfig.pool.acquire,
     idle: dbConfig.pool.idle,
   },
+  define: {
+    timestamps: false
+  }
 });
+
 const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.session = require("./session.model.js")(sequelize, Sequelize);
-db.user = require("./user.model.js")(sequelize, Sequelize);
+db.Member = require("./member.model.js")(sequelize, Sequelize);
+db.Story = require("./story.model.js")(sequelize, Sequelize);
+db.Genre = require("./genre.model.js")(sequelize, Sequelize);
+db.Language = require("./language.model.js")(sequelize, Sequelize);
+db.Session = require("./session.model.js")(sequelize, Sequelize);
+db.Role = require("./role.model.js")(sequelize, Sequelize);
+db.Settings = require("./settings.model.js")(sequelize, Sequelize);
 
-// foreign key for session
-db.user.hasMany(
-  db.session,
-  { as: "session" },
-  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
-);
-db.session.belongsTo(
-  db.user,
-  { as: "user" },
-  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
-);
+// Define associations
+db.Member.hasMany(db.Story, { as: "stories", foreignKey: "memberId", onDelete: "CASCADE" });
+db.Story.belongsTo(db.Member, { as: "author", foreignKey: "memberId", onDelete: "CASCADE" });
+
+db.Genre.hasMany(db.Story, { as: "stories", foreignKey: "genreId", onDelete: "CASCADE" });
+db.Story.belongsTo(db.Genre, { as: "genre", foreignKey: "genreId", onDelete: "CASCADE" });
+
+db.Member.hasMany(db.Session, { as: "sessions", foreignKey: "memberId", onDelete: "CASCADE" });
+db.Session.belongsTo(db.Member, { as: "user", foreignKey: "memberId", onDelete: "CASCADE" });
 
 module.exports = db;

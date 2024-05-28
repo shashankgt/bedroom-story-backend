@@ -1,18 +1,15 @@
 const db = require("../models");
-const User = db.user;
-const Session = db.session;
+const Member = db.Member;
+const Session = db.Session;
 const Op = db.Sequelize.Op;
 const { encrypt, getSalt, hashPassword } = require("../authentication/crypto");
 
 // Create and Save a new User
 exports.create = async (req, res) => {
   // Validate request
-  if (req.body.firstName === undefined) {
-    const error = new Error("First name cannot be empty for user!");
-    error.statusCode = 400;
-    throw error;
-  } else if (req.body.lastName === undefined) {
-    const error = new Error("Last name cannot be empty for user!");
+  console.log("creating new user")
+  if (req.body.fullName === undefined) {
+    const error = new Error("Full name cannot be empty for user!");
     error.statusCode = 400;
     throw error;
   } else if (req.body.email === undefined) {
@@ -26,14 +23,14 @@ exports.create = async (req, res) => {
   }
 
   // find by email
-  await User.findOne({
+  await Member.findOne({
     where: {
       email: req.body.email,
     },
   })
     .then(async (data) => {
       if (data) {
-        return "This email is already in use.";
+        res.status(400).send({ message: "This email is already in use." });
       } else {
         console.log("email not found");
 
@@ -42,39 +39,18 @@ exports.create = async (req, res) => {
 
         // Create a User
         const user = {
-          id: req.body.id,
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
+          fullName: req.body.fullName,
           email: req.body.email,
           password: hash,
           salt: salt,
+          hasAdminAccess: req.body.hasAdminAccess || false,
         };
 
         // Save User in the database
-        await User.create(user)
+        await Member.create(user)
           .then(async (data) => {
-            // Create a Session for the new user
-            let userId = data.id;
-
-            let expireTime = new Date();
-            expireTime.setDate(expireTime.getDate() + 1);
-
-            const session = {
-              email: req.body.email,
-              userId: userId,
-              expirationDate: expireTime,
-            };
-            await Session.create(session).then(async (data) => {
-              let sessionId = data.id;
-              let token = await encrypt(sessionId);
-              let userInfo = {
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                id: user.id,
-                token: token,
-              };
-              res.send(userInfo);
+            res.status(201).send({
+              message: "User created successfully. Please log in.",
             });
           })
           .catch((err) => {
@@ -87,7 +63,67 @@ exports.create = async (req, res) => {
       }
     })
     .catch((err) => {
-      return err.message || "Error retrieving User with email=" + email;
+      res.status(500).send({
+        message: err.message || "Error retrieving User with email=" + req.body.email,
+      });
+    });
+};
+
+// Log in a User
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
+  console.log("first step")
+  await Member.findOne({ where: { email: email } })
+    .then(async (user) => {
+      if (!user) {
+        console.log("user not found")
+        res.status(404).send({ message: "User not found." });
+        return;
+      }
+
+      const isPasswordValid = await hashPassword(password, user.salt) === user.password;
+
+      if (!isPasswordValid) {
+        console.log("invalid pwd")
+        res.status(401).send({ message: "Invalid password." });
+        return;
+      }
+
+      // Create a Session for the user
+      let expireTime = new Date();
+      expireTime.setDate(expireTime.getDate() + 1);
+
+      const session = {
+        email: user.email,
+        memberId: user.memberId,
+        expirationDate: expireTime,
+      };
+
+      await Session.create(session)
+        .then(async (data) => {
+          console.log("creating session")
+          let sessionId = data.id;
+          let token = await encrypt(sessionId);
+          let userInfo = {
+            email: user.email,
+            fullName: user.fullName,
+            id: user.memberId,
+            token: token,
+          };
+          res.send(userInfo);
+        })
+        .catch((err) => {
+          console.log(err);
+          res.status(500).send({
+            message:
+              err.message || "Some error occurred while creating the session.",
+          });
+        });
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Error logging in with email=" + email,
+      });
     });
 };
 
@@ -96,7 +132,7 @@ exports.findAll = (req, res) => {
   const id = req.query.id;
   var condition = id ? { id: { [Op.like]: `%${id}%` } } : null;
 
-  User.findAll({ where: condition })
+  Member.findAll({ where: condition })
     .then((data) => {
       res.send(data);
     })
@@ -111,7 +147,7 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
   const id = req.params.id;
 
-  User.findByPk(id)
+  Member.findByPk(id)
     .then((data) => {
       if (data) {
         res.send(data);
@@ -132,7 +168,7 @@ exports.findOne = (req, res) => {
 exports.findByEmail = (req, res) => {
   const email = req.params.email;
 
-  User.findOne({
+  Member.findOne({
     where: {
       email: email,
     },
@@ -158,7 +194,7 @@ exports.findByEmail = (req, res) => {
 exports.update = (req, res) => {
   const id = req.params.id;
 
-  User.update(req.body, {
+  Member.update(req.body, {
     where: { id: id },
   })
     .then((number) => {
@@ -183,7 +219,7 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
   const id = req.params.id;
 
-  User.destroy({
+  Member.destroy({
     where: { id: id },
   })
     .then((number) => {
@@ -206,7 +242,7 @@ exports.delete = (req, res) => {
 
 // Delete all People from the database.
 exports.deleteAll = (req, res) => {
-  User.destroy({
+  Member.destroy({
     where: {},
     truncate: false,
   })
