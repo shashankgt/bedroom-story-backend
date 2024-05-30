@@ -4,7 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const db = require("./app/models");
-const cohereapi = require("./cohereapi.js");
+const cohereapi = require("./app/cohereapi.js");
 db.sequelize.sync();
 
 var corsOptions = {
