@@ -5,12 +5,13 @@ const cohere = new CohereClient({
   token: cohereKey,
 })
 module.exports =async(story) => {
-    const { genre, language, role, country } = story;
+    const { genre, language, role, country, settings } = story;
     let prompt = "Create a story";
     if (genre != null) prompt += ` in the genre of ${genre}`;
     if (language != null) prompt += ` in the language of ${language}`;
     if (role != null) prompt += ` for the role of ${role}`;
     if (country != null) prompt += ` set in ${country}`;
+    if(settings != null ) prompt += ` and location is ${settings}`;
     prompt += ".";
     console.log("prompt",prompt)
     const response = await cohere.generate({
