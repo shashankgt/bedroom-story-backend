@@ -25,15 +25,30 @@ db.Language = require("./language.model.js")(sequelize, Sequelize);
 db.Session = require("./session.model.js")(sequelize, Sequelize);
 db.Role = require("./role.model.js")(sequelize, Sequelize);
 db.Settings = require("./settings.model.js")(sequelize, Sequelize);
+db.Theme = require("./theme.model.js")(sequelize,Sequelize);
+db.Size = require("./size.model.js")(sequelize,Sequelize);
 
 // Define associations
+
+db.Member.hasMany(db.Session, { as: "sessions", foreignKey: "memberId", onDelete: "CASCADE" });
+db.Session.belongsTo(db.Member, { as: "user", foreignKey: "memberId", onDelete: "CASCADE" });
+
 db.Member.hasMany(db.Story, { as: "stories", foreignKey: "memberId", onDelete: "CASCADE" });
 db.Story.belongsTo(db.Member, { as: "author", foreignKey: "memberId", onDelete: "CASCADE" });
 
 db.Genre.hasMany(db.Story, { as: "stories", foreignKey: "genreId", onDelete: "CASCADE" });
 db.Story.belongsTo(db.Genre, { as: "genre", foreignKey: "genreId", onDelete: "CASCADE" });
 
-db.Member.hasMany(db.Session, { as: "sessions", foreignKey: "memberId", onDelete: "CASCADE" });
-db.Session.belongsTo(db.Member, { as: "user", foreignKey: "memberId", onDelete: "CASCADE" });
+db.Language.hasMany(db.Story, { as: "stories", foreignKey: "languageId", onDelete: "CASCADE" });
+db.Story.belongsTo(db.Language, { as: "language", foreignKey: "languageId", onDelete: "CASCADE" });
+
+db.Role.hasMany(db.Story, { as: "stories", foreignKey: "roleId", onDelete: "CASCADE" });
+db.Story.belongsTo(db.Role, { as: "role", foreignKey: "roleId", onDelete: "CASCADE" });
+
+db.Settings.hasMany(db.Story, { as: "stories", foreignKey: "settingsId", onDelete: "CASCADE" });
+db.Story.belongsTo(db.Settings, { as: "settings", foreignKey: "settingsId", onDelete: "CASCADE" });
+
+db.Theme.hasMany(db.Story, { as: "stories", foreignKey: "themeId", onDelete: "CASCADE" });
+db.Story.belongsTo(db.Theme, { as: "size", foreignKey: "themeId", onDelete: "CASCADE" });
 
 module.exports = db;

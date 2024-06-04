@@ -5,18 +5,6 @@ module.exports = (sequelize, Sequelize) => {
         autoIncrement: true,
         primaryKey: true
       },
-      storyTitle: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
-      memberId: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-      },
-      genreId: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-      },
       story: {
         type: Sequelize.TEXT,
         allowNull: false

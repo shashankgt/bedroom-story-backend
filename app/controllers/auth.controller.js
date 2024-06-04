@@ -29,6 +29,7 @@ exports.login = async (req, res) => {
         fullName: user.fullName,
         id: user.memberId,
         token: token,
+        hasAdminAccess: user.hasAdminAccess
       };
       res.send(userInfo);
     });
