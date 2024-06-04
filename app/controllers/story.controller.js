@@ -7,7 +7,7 @@ const Role = db.Role;
 const Theme = db.Theme;
 const Size = db.Size;
 const Member = db.Member;
-
+const Setting = db.Settings;
 
 async function checkOrCreateGenre(genreText) {
   genreText = genreText.toLowerCase();
