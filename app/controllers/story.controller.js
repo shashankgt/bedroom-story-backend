@@ -65,7 +65,7 @@ async function checkOrCreateSetting(settingText) {
 exports.create = async (req, res) => {
 
   try {
-    const { genre, language, role, theme, sizeId, setting, memberId } = req.body;
+    const { genre, language, role, theme, sizeId, settings, memberId } = req.body;
     let genreId, languageId, roleId, themeId, sizeNumber, settingId;
 
     if (!memberId) {
@@ -81,8 +81,8 @@ exports.create = async (req, res) => {
     if (genre) 
       genreId = await checkOrCreateGenre(genre);
 
-    if(setting) 
-      settingId = await checkOrCreateSetting(setting);
+    if(settings) 
+      settingId = await checkOrCreateSetting(settings);
 
     if (language)
      languageId = await checkOrCreateLanguage(language);
