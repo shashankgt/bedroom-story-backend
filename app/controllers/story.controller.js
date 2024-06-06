@@ -163,3 +163,27 @@ exports.findOne = (req, res) => {
       message: err.message || "Error retrieving Story with id=" + id
     }));
 };
+
+exports.delete = (req, res) => {
+  const id = req.params.id;
+
+  Story.destroy({ where: { id: id } })
+    .then(num => {
+      if (num == 1) {
+        res.send({ message: "Story was deleted successfully!" });
+      } else {
+        res.send({ message: `Cannot delete Story with id=${id}. Maybe Story was not found!` });
+      }
+    })
+    .catch(err => res.status(500).send({
+      message: err.message || "Could not delete Story with id=" + id
+    }));
+};
+
+exports.deleteAll = (req, res) => {
+  Story.destroy({ where: {}, truncate: false })
+    .then(nums => res.send({ message: `${nums} Stories were deleted successfully!` }))
+    .catch(err => res.status(500).send({
+      message: err.message || "Some error occurred while removing all stories."
+    }));
+};
