@@ -167,7 +167,7 @@ exports.findOne = (req, res) => {
 exports.delete = (req, res) => {
   const id = req.params.id;
 
-  Story.destroy({ where: { id: id } })
+  Story.destroy({ where: { storyId: id } })
     .then(num => {
       if (num == 1) {
         res.send({ message: "Story was deleted successfully!" });
