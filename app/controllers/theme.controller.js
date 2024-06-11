@@ -73,7 +73,7 @@ exports.update = (req, res) => {
   const id = req.params.id;
 
   Theme.update(req.body, {
-    where: { id: id }
+    where: { themeId: id }
   })
     .then(num => {
       if (num == 1) {
@@ -82,13 +82,13 @@ exports.update = (req, res) => {
         });
       } else {
         res.send({
-          message: `Cannot update Theme with id=${id}. Maybe Theme was not found or req.body is empty!`
+          message: `Cannot update Theme with themeId=${id}. Maybe Theme was not found or req.body is empty!`
         });
       }
     })
     .catch(err => {
       res.status(500).send({
-        message: "Error updating Theme with id=" + id
+        message: "Error updating Theme with themeId=" + id
       });
     });
 };
@@ -98,7 +98,7 @@ exports.delete = (req, res) => {
   const id = req.params.id;
 
   Theme.destroy({
-    where: { id: id }
+    where: { themeId: id }
   })
     .then(num => {
       if (num == 1) {
@@ -107,13 +107,13 @@ exports.delete = (req, res) => {
         });
       } else {
         res.send({
-          message: `Cannot delete Theme with id=${id}. Maybe Theme was not found!`
+          message: `Cannot delete Theme with themeId=${id}. Maybe Theme was not found!`
         });
       }
     })
     .catch(err => {
       res.status(500).send({
-        message: "Could not delete Theme with id=" + id
+        message: "Could not delete Theme with themeId=" + id
       });
     });
 };
