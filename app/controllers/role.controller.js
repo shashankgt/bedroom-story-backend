@@ -50,16 +50,16 @@ exports.findOne = (req, res) => {
 exports.update = (req, res) => {
   const id = req.params.id;
 
-  Role.update(req.body, { where: { id: id } })
+  Role.update(req.body, { where: { roleId: id } })
     .then(num => {
       if (num == 1) {
         res.send({ message: "Role was updated successfully." });
       } else {
-        res.send({ message: `Cannot update Role with id=${id}. Maybe Role was not found or req.body is empty!` });
+        res.send({ message: `Cannot update Role with roleId=${id}. Maybe Role was not found or req.body is empty!` });
       }
     })
     .catch(err => res.status(500).send({
-      message: err.message || "Error updating Role with id=" + id
+      message: err.message || "Error updating Role with roleId=" + id
     }));
 };
 
@@ -67,16 +67,16 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
   const id = req.params.id;
 
-  Role.destroy({ where: { id: id } })
+  Role.destroy({ where: { roleId: id } })
     .then(num => {
       if (num == 1) {
         res.send({ message: "Role was deleted successfully!" });
       } else {
-        res.send({ message: `Cannot delete Role with id=${id}. Maybe Role was not found!` });
+        res.send({ message: `Cannot delete Role with roleId=${id}. Maybe Role was not found!` });
       }
     })
     .catch(err => res.status(500).send({
-      message: err.message || "Could not delete Role with id=" + id
+      message: err.message || "Could not delete Role with roleId=" + id
     }));
 };
 

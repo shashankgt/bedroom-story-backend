@@ -50,16 +50,16 @@ exports.findOne = (req, res) => {
 exports.update = (req, res) => {
   const id = req.params.id;
 
-  Genre.update(req.body, { where: { id: id } })
+  Genre.update(req.body, { where: { genreId: id } })
     .then(num => {
       if (num == 1) {
         res.send({ message: "Genre was updated successfully." });
       } else {
-        res.send({ message: `Cannot update Genre with id=${id}. Maybe Genre was not found or req.body is empty!` });
+        res.send({ message: `Cannot update Genre with genreId=${id}. Maybe Genre was not found or req.body is empty!` });
       }
     })
     .catch(err => res.status(500).send({
-      message: err.message || "Error updating Genre with id=" + id
+      message: err.message || "Error updating Genre with genreId=" + id
     }));
 };
 
@@ -67,16 +67,16 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
   const id = req.params.id;
 
-  Genre.destroy({ where: { id: id } })
+  Genre.destroy({ where: { genreId: id } })
     .then(num => {
       if (num == 1) {
         res.send({ message: "Genre was deleted successfully!" });
       } else {
-        res.send({ message: `Cannot delete Genre with id=${id}. Maybe Genre was not found!` });
+        res.send({ message: `Cannot delete Genre with genreId=${id}. Maybe Genre was not found!` });
       }
     })
     .catch(err => res.status(500).send({
-      message: err.message || "Could not delete Genre with id=" + id
+      message: err.message || "Could not delete Genre with genreId=" + id
     }));
 };
 
