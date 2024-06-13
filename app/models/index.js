@@ -49,6 +49,6 @@ db.Settings.hasMany(db.Story, { as: "stories", foreignKey: "settingsId", onDelet
 db.Story.belongsTo(db.Settings, { as: "settings", foreignKey: "settingsId", onDelete: "CASCADE" });
 
 db.Theme.hasMany(db.Story, { as: "stories", foreignKey: "themeId", onDelete: "CASCADE" });
-db.Story.belongsTo(db.Theme, { as: "size", foreignKey: "themeId", onDelete: "CASCADE" });
+db.Story.belongsTo(db.Theme, { as: "theme", foreignKey: "themeId", onDelete: "CASCADE" });
 
 module.exports = db;
