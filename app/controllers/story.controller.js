@@ -7,6 +7,7 @@ const Role = db.Role;
 const Theme = db.Theme;
 const Size = db.Size;
 const Member = db.Member;
+const Op = db.Sequelize.Op;
 const Setting = db.Settings;
 
 async function checkOrCreateGenre(genreText) {
@@ -132,7 +133,11 @@ exports.create = async (req, res) => {
 // Retrieve all Stories from the database.
 exports.findAll = (req, res) => {
 
-  Story.findAll()
+  Story.findAll({
+    include: [
+      { model: Genre, as: 'genre' }
+    ]
+  })
     .then(data => res.send(data))
     .catch(err => res.status(500).send({
       message: err.message || "Some error occurred while retrieving stories."
@@ -147,11 +152,41 @@ exports.findAllSizes = (req, res) => {
     }));
 }; 
 
+exports.getStoriesByMemberId = async (req, res) => {
+  const { memberId } = req.params;
+  var condition = { memberId };
+  try {
+    const stories = await Story.findAll({ where: condition,
+      include: [
+        { model: Genre, as: 'genre' },
+        { model: Language, as:'language'},
+        { model: Role, as:'role'},
+        { model: Setting, as:'settings'},
+        { model: Theme, as:'theme'}
+        // Add more includes for other foreign key relationships if needed
+      ]
+    }); // Assuming you have a `memberId` field in your Story model
+    res.status(200).json(stories);
+  } catch (error) {
+    console.error('Error fetching stories by member ID:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 // Find a single Story with an id
 exports.findOne = (req, res) => {
   const id = req.params.id;
 
-  Story.findByPk(id)
+  Story.findByPk(id, {
+    include: [
+      { model: Genre, as: 'genre' },
+      { model: Language, as:'language'},
+      { model: Role, as:'role'},
+      { model: Setting, as:'settings'},
+      { model: Theme, as:'theme'}
+      // Add more includes for other foreign key relationships if needed
+    ]
+  })
     .then(data => {
       if (data) {
         res.send(data);
@@ -164,6 +199,60 @@ exports.findOne = (req, res) => {
     }));
 };
 
+// Update a Story by the id in the request
+exports.update = async (req, res) => {
+  const id = req.params.id;
+  const { genre, language, role, theme, sizeId, setting } = req.body;
+    let genreId, languageId, roleId, themeId, sizeNumber, settingId;
+
+    if (genre) 
+      genreId = await checkOrCreateGenre(genre);
+
+    if(setting) 
+      settingId = await checkOrCreateSetting(setting);
+
+    if (language)
+     languageId = await checkOrCreateLanguage(language);
+    
+    if (role)
+     roleId = await checkOrCreateRole(role);
+
+    if (theme)
+     themeId = await checkOrCreateTheme(theme);
+
+    if (sizeId)
+     sizeNumber = await getSize(sizeId)
+
+    if (sizeNumber == -1) {
+      res.status(401).send({
+        message: "Size does not exist."
+      });
+    } 
+  const generatedText = await cohereapi({...req.body, size: sizeNumber});
+
+    const story = {
+      genreId: genreId,
+      languageId: languageId,
+      roleId: roleId,
+      themeId: themeId,
+      story: generatedText,
+      settingsId: settingId,
+    };
+    console.log("story",JSON.stringify(story))
+  Story.update(story, { where: { storyId: id } })
+    .then(num => {
+      if (num == 1) {
+        res.send({ message: "Story was updated successfully." });
+      } else {
+        res.send({ message: `Cannot update Story with id=${id}. Maybe Story was not found or req.body is empty!` });
+      }
+    })
+    .catch(err => res.status(500).send({
+      message: err.message || "Error updating Story with id=" + id
+    }));
+};
+
+// Delete a Story with the specified id in the request
 exports.delete = (req, res) => {
   const id = req.params.id;
 
@@ -180,6 +269,7 @@ exports.delete = (req, res) => {
     }));
 };
 
+// Delete all Stories from the database.
 exports.deleteAll = (req, res) => {
   Story.destroy({ where: {}, truncate: false })
     .then(nums => res.send({ message: `${nums} Stories were deleted successfully!` }))
