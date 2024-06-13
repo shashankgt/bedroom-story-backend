@@ -12,6 +12,9 @@ module.exports = (app) => {
   
     // Retrieve a single Story with id
     router.get("/stories/:id", Story.findOne);
+
+    router.get('/stories/member/:memberId', Story.getStoriesByMemberId);
+    router.put("/stories/:id", Story.update);
      
     router.delete("/stories/:id", Story.delete);
     router.delete("/stories/", Story.deleteAll);
