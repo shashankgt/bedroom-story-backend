@@ -20,10 +20,10 @@ async function checkOrCreateGenre(genreText) {
   return genre.genreId;
 }
 
-async function getSize(sizeId) {
-  let size = await Size.findByPk(sizeId);
+async function getSize(sizeName) {
+  let size = await Size.findOne({ where: { sizeName } });
   if (!size) return -1;
-  return size.number;
+  return size;
 }
 
 async function checkOrCreateLanguage(languageText) {
@@ -66,8 +66,8 @@ async function checkOrCreateSetting(settingText) {
 exports.create = async (req, res) => {
 
   try {
-    const { genre, language, role, theme, sizeId, settings, memberId } = req.body;
-    let genreId, languageId, roleId, themeId, sizeNumber, settingId;
+    const { genre, language, role, theme, size, settings, memberId } = req.body;
+    let genreId, languageId, roleId, themeId, dbsize, settingId;
 
     if (!memberId) {
       throw Error("memberId not found in the request body.")
@@ -94,16 +94,16 @@ exports.create = async (req, res) => {
     if (theme)
      themeId = await checkOrCreateTheme(theme);
 
-    if (sizeId)
-     sizeNumber = await getSize(sizeId)
+    if (size)
+     dbsize = await getSize(size)
 
-    if (sizeNumber == -1) {
+    if (dbsize == -1) {
       res.status(401).send({
         message: "Size does not exist."
       });
     } 
 
-    const generatedText = await cohereapi({...req.body, size: sizeNumber});
+    const generatedText = await cohereapi({...req.body, size: dbsize.number});
 
     const story = {
       memberId: req.body.memberId,
@@ -112,7 +112,8 @@ exports.create = async (req, res) => {
       roleId: roleId,
       themeId: themeId,
       story: generatedText,
-      settingsId: settingId
+      settingsId: settingId,
+      sizeId: dbsize.id
     };
     console.log("story",JSON.stringify(story))
     
@@ -162,7 +163,8 @@ exports.getStoriesByMemberId = async (req, res) => {
         { model: Language, as:'language'},
         { model: Role, as:'role'},
         { model: Setting, as:'settings'},
-        { model: Theme, as:'theme'}
+        { model: Theme, as:'theme'},
+        { model: Size, as:'size' }
         // Add more includes for other foreign key relationships if needed
       ]
     }); // Assuming you have a `memberId` field in your Story model
@@ -183,7 +185,8 @@ exports.findOne = (req, res) => {
       { model: Language, as:'language'},
       { model: Role, as:'role'},
       { model: Setting, as:'settings'},
-      { model: Theme, as:'theme'}
+      { model: Theme, as:'theme'},
+      { model: Size, as:'size' }
       // Add more includes for other foreign key relationships if needed
     ]
   })
@@ -202,8 +205,8 @@ exports.findOne = (req, res) => {
 // Update a Story by the id in the request
 exports.update = async (req, res) => {
   const id = req.params.id;
-  const { genre, language, role, theme, sizeId, setting } = req.body;
-    let genreId, languageId, roleId, themeId, sizeNumber, settingId;
+  const { genre, language, role, theme, size, setting } = req.body;
+    let genreId, languageId, roleId, themeId, dbSize, settingId;
 
     if (genre) 
       genreId = await checkOrCreateGenre(genre);
@@ -220,15 +223,16 @@ exports.update = async (req, res) => {
     if (theme)
      themeId = await checkOrCreateTheme(theme);
 
-    if (sizeId)
-     sizeNumber = await getSize(sizeId)
+    if (size)
+     dbSize = await getSize(size)
 
-    if (sizeNumber == -1) {
+    if (dbSize == -1) {
       res.status(401).send({
         message: "Size does not exist."
       });
     } 
-  const generatedText = await cohereapi({...req.body, size: sizeNumber});
+  const generatedText = await cohereapi({...req.body, size: dbSize.number});
+
 
     const story = {
       genreId: genreId,
@@ -237,6 +241,7 @@ exports.update = async (req, res) => {
       themeId: themeId,
       story: generatedText,
       settingsId: settingId,
+      sizeId: dbSize.id
     };
     console.log("story",JSON.stringify(story))
   Story.update(story, { where: { storyId: id } })

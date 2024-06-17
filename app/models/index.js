@@ -48,6 +48,9 @@ db.Story.belongsTo(db.Role, { as: "role", foreignKey: "roleId", onDelete: "CASCA
 db.Settings.hasMany(db.Story, { as: "stories", foreignKey: "settingsId", onDelete: "CASCADE" });
 db.Story.belongsTo(db.Settings, { as: "settings", foreignKey: "settingsId", onDelete: "CASCADE" });
 
+db.Size.hasMany(db.Story, { as: "stories", foreignKey: "sizeId", onDelete: "CASCADE" });
+db.Story.belongsTo(db.Size, { as: "size", foreignKey: "sizeId", onDelete: "CASCADE" });
+
 db.Theme.hasMany(db.Story, { as: "stories", foreignKey: "themeId", onDelete: "CASCADE" });
 db.Story.belongsTo(db.Theme, { as: "theme", foreignKey: "themeId", onDelete: "CASCADE" });
 
