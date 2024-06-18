@@ -136,7 +136,12 @@ exports.findAll = (req, res) => {
 
   Story.findAll({
     include: [
-      { model: Genre, as: 'genre' }
+      { model: Genre, as: 'genre' },
+      { model: Language, as:'language'},
+      { model: Role, as:'role'},
+      { model: Setting, as:'settings'},
+      { model: Theme, as:'theme'},
+      { model: Size, as:'size' }
     ]
   })
     .then(data => res.send(data))
